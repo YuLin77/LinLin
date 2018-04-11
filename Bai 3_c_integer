@@ -1,0 +1,106 @@
+# Nhap mot mang N so nguyen X
+# a) Tinh tong cac phan tu cua mang
+# b) Tim min max cua mang
+# c) Viet lai a) va b) duoi dang ham
+#	SUM($X, N)
+#	MINMAX(&X, N, min, max)
+
+################# Data segment #####################
+.data
+	arrayA:	.word 0:100						# int array[100]
+	Nhap:	.asciiz "Nhap vao so luong phan tu cua mang: "
+	A1:	.asciiz "A["
+	A2:	.asciiz "] = "
+	Xuat:	.asciiz "Mang da nhap: "
+	space:	.asciiz " "
+	Sum: 	.asciiz "\nTong cac phan tu cua mang la: "
+	Min: 	.asciiz "\nGia tri nho nhat la: "
+	Max: 	.asciiz "\nGia tri lon nhat la: "
+	
+################# Code segment #####################
+.text
+.globl main
+main:
+	addi	$s1, $zero, 0		# Dat sum = 0
+	la	$a0, Nhap		# Nhap N	
+	jal	in_str
+	jal	nhap_int
+	addi	$t0, $v0, 0		# $t0 = N
+	jal	khoi_tao_mang		# Khoi tao mang
+NhapMang:
+	subu	$t2, $t1, $t0		# Kiem tra so lan lap
+	bgez	$t2, KetThucNhap	# Neu $t2 >= 0 nhay den nhan KetThucNhap
+	la	$a0, A1			# Hien thi A[$t1] =
+	jal	in_str
+	addi	$a0, $t1, 0
+	jal	in_int
+	la	$a0, A2
+	jal	in_str
+	jal	nhap_int		# Nhap so nguyen va luu vao arrayA[$t1]
+	sw	$v0, ($a1)
+	jal	tinh_tong		# Goi ham tinh tong
+	jal	so_sanh			# Goi ham so sanh tim Min, Max 
+KetThucNhap:
+	la	$a0, Xuat		# Xuat mang
+	jal	in_str
+	jal	khoi_tao_mang
+XuatMang:
+	subu	$t2, $t1, $t0		# Kiem tra so lan lap
+	bgez	$t2, KetThuc		# Neu $t2 >= 0 nhay den nhan KetThuc
+	lw	$a0, ($a1)		# Xuat phan tu arrayA[$t1]
+	jal 	in_int
+	la	$a0, space		# Xuat khoang trang
+	jal	in_str
+	jal	tang_chi_so		# Tang chi so
+	j	XuatMang		# Nhay den nhan XuatMang de xuat so tiep theo
+KetThuc:
+	la	$a0, Sum		# Xuat tong
+	jal	in_str
+	add	$a0, $s1, $zero
+	jal 	in_int
+	la 	$a0, Min		# Xuat gia tri nho nhat
+	jal	in_str
+	addi 	$a0, $t5, 0
+	jal 	in_int
+	la 	$a0, Max		# Xuat gia tri lon nhat
+	jal	in_str
+ 	addi 	$a0, $t6, 0
+	jal 	in_int
+	li	$v0, 10			# Ket thuc
+	syscall
+# Ham
+in_str:					# In chuoi ky tu
+	li	$v0, 4
+	syscall
+	jr	$ra
+in_int:					# In so nguyen
+	li	$v0, 1
+	syscall
+	jr	$ra
+nhap_int:				# Nhap so nguyen
+	li	$v0, 5
+	syscall
+	jr	$ra
+khoi_tao_mang:				
+	la	$a1, arrayA
+	addi	$t1, $zero, 0
+	jr	$ra
+tang_chi_so:
+	addi 	$t1, $t1, 1
+	addi	$a1, $a1, 4
+	jr	$ra
+tinh_tong:
+	add	$s1, $s1, $v0
+so_sanh:
+	bne 	$t1, $zero, Nhay	# Neu $t1 != 0, nhay den nhan Nhay
+	addi 	$t5, $v0, 0		# Dat Min = $t5 = $v0 
+	addi 	$t6, $v0, 0		# Dat Max = $t6 = $v0
+Nhay:	addi 	$t3, $v0, 0		# $t3 = $v0
+	jal	tang_chi_so		# Tang chi so
+SSMin:	slt 	$t2, $t3, $t5		# Neu $t3 < $t5, $t2 = 1, neu khong thi $t2 = 0
+	beq 	$t2, $zero, SSMax	# Neu $t2 = 0, nhay den nhan SSMax
+	addi 	$t5, $t3, 0		# Neu $t2 = 1, thay $t5 = $t3
+SSMax:	slt 	$t2, $t6, $t3		# Neu $t6 < $t3, $t2 = 1, neu khong thi $t2 = 0
+	beq 	$t2, $zero, NhapMang	# Neu $t2 = 0, nhay den nhan NhapMang
+	addi 	$t6, $t3, 0		# Neu $t2 = 1, thay $t6 = $t3
+	j 	NhapMang		# Nhay den nhan NhapMang de nhap so tiep theo
