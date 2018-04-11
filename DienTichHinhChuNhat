@@ -1,0 +1,35 @@
+# Tinh dien tich hinh chu nhat voi chieu dai va chieu rong la so thuc.
+
+################# Data segment #####################
+.data
+	dai:      .asciiz	"Nhap chieu dai hinh chu nhat: "
+	rong:     .asciiz	"Nhap chieu rong hinh chu nhat: "
+	dientich: .asciiz	"Dien tich hinh chu nhat la: "
+	
+################# Code segment #####################
+.text
+.globl main
+main:
+	la      $a0, dai
+	li      $v0, 4
+	syscall
+	li      $v0, 6			# Doc chieu dai vao $f1
+	syscall
+	mov.s   $f1, $f0
+	
+	la      $a0, rong
+	li      $v0, 4
+	syscall
+	li      $v0, 6			# Doc chieu rong vao $f0
+	syscall
+	
+	mul.s	$f12, $f1, $f0		# $f12 = $f1 * $f2 (Dien tich = dai*rong)
+	
+	la      $a0, dientich
+	li      $v0, 4
+	syscall
+	li      $v0, 2			# In ket qua
+	syscall
+	
+	li      $v0, 10			# Ket thuc
+	syscall
