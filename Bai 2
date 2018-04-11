@@ -1,0 +1,57 @@
+# Objective: Computes the operation: (4x + 5)/y with x, y is integer.
+# Input: Requests x, y.
+# Output: Prints the result (4x + 5)/y.
+
+################# Data segment #####################
+.data
+	promptx:     	.asciiz     "Please enter x: "
+	prompty:     	.asciiz     "Please enter y: "
+	quotient:	.asciiz     "Result: (4x + 5)/y = "
+	remainder:	.asciiz     " remain "  	
+
+################# Code segment #####################
+.text
+.globl main
+main:
+	la 	$a0, promptx		# display promptx string
+	li 	$v0, 4
+	syscall
+	li 	$v0, 5			# read x into $t0
+	syscall
+	move 	$t0, $v0
+	
+	la      $a0, prompty		# display prompty string
+	li      $v0, 4
+	syscall
+	li      $v0, 5			# read y into $t1
+	syscall
+	move   $t1, $v0
+	
+	addi 	$t2, $zero, 4		# $s0 = 4x
+	mult 	$t0, $t2
+	mflo 	$s0
+	
+	addi	$s0, $s0, 5		# $s0 = 4x + 5
+	
+	div 	$s0, $t1		# $s0 / $t1 = (4x + 5) / y
+	mflo 	$s1			# $s1 = lo (quotient)
+	mfhi	$s2			# $s2 = hi (remainder)
+	
+	la      $a0, quotient		# display quotient string
+	li      $v0, 4
+	syscall
+	
+	add 	$a0, $zero, $s1
+	li      $v0, 1			# print quotient
+	syscall
+	
+	la      $a0, remainder		# display remainder string
+	li      $v0, 4
+	syscall
+	
+	add 	$a0, $zero, $s2
+	li      $v0, 1			# print remainder
+	syscall
+	
+	li      $v0, 10			# exit
+	syscall
