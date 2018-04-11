@@ -1,0 +1,64 @@
+# Objective: Computes the operation: ((5x + 3y + z)/2)*3 with x, y, z is float.
+# Input: Requests x, y, z.
+# Output: Prints the result ((5x + 3y + z)/2)*3.
+
+################# Data segment #####################
+.data
+	promptx:     .asciiz     "Please enter x: "
+	prompty:     .asciiz     "Please enter y: "
+	promptz:     .asciiz     "Please enter z: "
+	result:	     .asciiz     "((5x + 3y + z)/2)*3 = "
+	
+	indexx:      .float 5.0
+	indexy:      .float 3.0
+	a:           .float 0.5
+	c:           .float 3.0
+
+################# Code segment #####################
+.text
+.globl main
+main:
+	la      $a0, promptx		# display promptx string
+	li      $v0, 4
+	syscall
+	li      $v0, 6			# read x into $f1
+	syscall
+	mov.s   $f1, $f0
+	
+	la      $a0, prompty		# display prompty string
+	li      $v0, 4
+	syscall
+	li      $v0, 6			# read y into $f2
+	syscall
+	mov.s   $f2, $f0
+	
+	la      $a0, promptz		# display promptz string
+	li      $v0, 4
+	syscall
+	li      $v0, 6			# read z into $f3
+	syscall
+	mov.s   $f3, $f0
+			
+	l.s     $f4, indexx		# load indexx into $f4 ($f4 = 5)
+	mul.s   $f12, $f4, $f1		# $f12 = 5x
+	
+	l.s     $f5, indexy		# load indexy into $f5 ($f5 = 3)
+	mul.s   $f5, $f5, $f2		# $f5 = 3y
+	add.s   $f12, $f12, $f5		# $f12 = 5x + 3y
+	add.s   $f12, $f12, $f3		# $f12 = 5x + 3y + z
+	
+	l.s     $f6, a			# load a into $f6 ($f6 = 0.5)
+	mul.s   $f12, $f12, $f6		# $f12 = (5x + 3y + z)/2
+	
+	l.s     $f7, c			# load c into $f7 ($f7 = 3)
+	mul.s   $f12, $f12, $f7		# $f12 = ((5x + 3y + z)/2)*3
+	
+	la      $a0, result		# display result string
+	li      $v0, 4
+	syscall
+	li      $v0, 2			# print output
+	syscall
+	li      $v0, 10			# exit
+	syscall
+	
+#Cmt: MARS 4.5
