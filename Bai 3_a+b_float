@@ -1,0 +1,153 @@
+# Nhap mot mang N so thuc X
+# a) Tinh tong cac phan tu cua mang
+# b) Tim min max cua mang
+# c) Viet lai a) va b) duoi dang ham
+#	SUM($X, N)
+#	MINMAX(&X, N, min, max)
+
+################# Data segment #####################
+.data
+	arrayA:	.word 0:100						# array[100]
+	Nhap:	.asciiz "Nhap vao so luong phan tu cua mang: "
+	A1:	.asciiz "A["
+	A2:	.asciiz "] = "
+	Xuat:	.asciiz "Mang da nhap: "
+	space:	.asciiz " "
+	Sum: 	.asciiz "\nTong cac phan tu cua mang la: "
+	Min: 	.asciiz "\nGia tri nho nhat la: "
+	Max: 	.asciiz "\nGia tri lon nhat la: "
+	
+	index:	.float 0.0
+	
+################# Code segment #####################
+.text
+.globl main
+main:
+	l.s	$f4, index		# $f4 = 0.0
+	add.s	$f7, $f7, $f4		# Dat Sum = $f7 = 0.0
+	
+# Nhap so luong phan tu cua mang
+	la	$a0, Nhap		
+	li	$v0, 4			# Hien thi: Nhap vao so luong phan tu cua mang: 
+	syscall
+	li	$v0, 5			# Nhap N
+	syscall
+	addi	$t0, $v0, 0		# $t0 = N
+
+# Khoi tao mang
+	la	$a1, arrayA
+	addi	$t1, $zero, 0		# $t1 = 0
+
+NhapMang:
+	# Kiem tra so lan lap
+	subu	$t2, $t1, $t0		# $t2 = $t1 - $t0
+	bgez	$t2, KetThucNhap	# Neu $t2 >= 0 nhay den nhan KetThucNhap
+
+	# Hien thi: A[$t1] =
+	la	$a0, A1
+	li	$v0, 4
+	syscall
+
+	addi	$a0, $t1, 0
+	li	$v0, 1
+	syscall
+
+	la	$a0, A2
+	li	$v0, 4
+	syscall
+
+	# Nhap so thuc va luu vao arrayA[$t1]
+	li	$v0, 6
+	syscall
+	s.s	$f0, ($a1)
+
+# Tinh tong cac phan tu cua mang
+	add.s	$f7, $f7, $f0		# $f7 = $f7 + $f0
+	
+# So sanh tim Min, Max 
+	bne 	$t1, $zero, Nhay	# Neu $t1 != 0, nhay den nhan Nhay
+	add.s 	$f5, $f0, $f4		# Dat Min = $f5 = $f0 
+	add.s 	$f6, $f0, $f4		# Dat Max = $f6 = $f0
+	
+Nhay:
+	add.s 	$f3, $f0, $f4		# $f3 = $f0
+	
+	# Tang chi so
+	addi 	$t1, $t1, 1		# $t1 = $t1 + 1
+	addi	$a1, $a1, 4		# $a1 = $a1 + 4
+
+SSMin:
+	c.lt.s 	$f3, $f5		# Neu $f3 < $f5, condition bit = 1, neu khong thi condition bit = 0
+	bc1f 	SSMax			# Neu condition bit = 0, nhay den nhan SSMax
+	bc1t 	Dao1			# Neu condition bit = 1, nhay den nhan Dao1
+Dao1:	
+	add.s	$f5, $f3, $f4		# Thay Min = $f5 = $f3
+	j	SSMax			# Nhay den nhan SSMax
+SSMax:
+	c.lt.s 	$f6, $f3		# Neu $f6 < $f3, condition bit = 1, neu khong thi condition bit = 0
+	bc1f	NhapMang		# Neu condition bit = 0, nhay den nhan NhapMang
+	bc1t	Dao2			# Neu condition bit = 1, nhay den nhan Dao2
+Dao2:	
+	add.s 	$f6, $f3, $f4		# Thay Max = $f6 = $f3
+	j 	NhapMang		# Nhay den nhan NhapMang de nhap so tiep theo
+	
+# Xuat mang
+KetThucNhap:
+	la	$a0, Xuat
+	li	$v0, 4			# Hien thi: Mang da nhap:
+	syscall
+
+	# Khoi tao mang
+	la	$a1, arrayA
+	addi	$t1, $zero, 0		# $t1 = 0
+
+XuatMang:
+	# Kiem tra so lan lap
+	subu	$t2, $t1, $t0		# $t2 = $t1 - $t0
+	bgez	$t2, Tong		# Neu $t2 >= 0 nhay den nhan Tong
+
+	# Xuat phan tu arrayA[$t1]
+	l.s	$f12, ($a1)
+	li	$v0, 2
+	syscall
+
+	# Xuat khoang trang
+	la	$a0, space		
+	li	$v0, 4
+	syscall
+	
+	# Tang chi so
+	addi	$t1, $t1, 1
+	addi	$a1, $a1, 4
+
+	j	XuatMang		# Nhay den nhan XuatMang de xuat so tiep theo
+
+# Xuat tong
+Tong:
+	la	$a0, Sum		
+	li	$v0, 4			# Hien thi: Tong cac phan tu cua mang la:
+	syscall
+	
+	add.s	$f12, $f7, $f4		# $f12 = $f7
+	li      $v0, 2			# In ra tong
+	syscall
+	
+# Xuat Min, Max
+MinMax:
+	la 	$a0, Min		
+	li	$v0, 4			# Hien thi: Gia tri nho nhat la:
+	syscall
+	add.s 	$f12, $f5, $f4		# $f12 = $f5
+	li	$v0, 2			# In ra Min
+ 	syscall   
+
+	la 	$a0, Max
+	li	$v0, 4			# Hien thi: Gia tri lon nhat la:
+	syscall
+ 	add.s 	$f12, $f6, $f4		# $f12 = $f6
+	li	$v0, 2			# In ra Max
+	syscall
+
+KetThuc:
+	li	$v0, 10
+	syscall
